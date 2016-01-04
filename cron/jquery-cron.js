@@ -1,130 +1,27 @@
-'/*
+/*
  * Cron jQuery plugin (version 0.9.0)
  * https://github.com/null-d3v/jquery-cron
  *
  * Copyright null-d3v
  * Released under the MIT license
- */'
+ */
 (function($)
 {
-    var months =
-    [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
-    ];
-    var $monthSelect = $("<select>");
-    for (var index = 0; index < months.length; index++)
-    {
-        $("<option>")
-            .attr("value", index + 1)
-            .text(months[index])
-            .appendTo($monthSelect);
-    }
-
-    var intervals =
-    {
-        "minute": 0,
-        "hour": 1,
-        "day": 2,
-        "week": 3,
-        "month": 4,
-        "year": 5,
-    };
-    var $intervalSelect = $("<select>");
-    for (var interval in intervals)
-    {
-        $("<option>")
-            .attr("value", intervals[interval])
-            .text(interval)
-            .appendTo($intervalSelect);
-    }
-
-    var interval = intervals.minute;
-
-    var defaultOptions =
-    {
-        value: "* * * * *",
-        enabled: true,
-        utc: true,
-    };
-    var methods =
-    {
-        initialize: function(options)
-        {
-            var $this = $(this);
-            options = $.extend({}, defaultOptions, options);
-
-            var $cronDiv = $("<div>")
-                .append($("<span>")
-                    .text("Every"))
-                .append($intervalSelect)
-                .append($("<span>")
-                    .text("on")
-                    .addClass("cron-hour cron-week cron-month cron-year"))
-                .append($("<span>")
-                    .text("the")
-                    .addClass("cron-month"))
-                .append($weekdaySelect)
-                .append($monthSelect)
-                .append($monthdaySelect)
-                .append($("<span>")
-                    .text("day")
-                    .addClass("cron-month"))
-                .append($("<span>")
-                    .text("at")
-                    .addClass("cron-day cron-week cron-month cron-year"))
-                .append($hourSelect)
-                .append($("<span>")
-                    .text(":")
-                    .addClass("cron-day cron-week cron-month cron-year"))
-                .append($minuteSelect)
-                .append($("<span>")
-                    .text("minutes past the hour")
-                    .addClass("cron-hour"));
-
-            setValue(options.value);
-
-            $this.append($cronDiv);
-        },
-        value: function(cron)
-        {
-            if (typeof(cron) !== "undefined")
-            {
-                setValue(cron);
-            }
-            else
-            {
-                return getValue();
-            }
-
-        },
-    };
-
     var getOrdinalSuffix = function(number)
     {
         var suffix = "";
 
         var mod10 = number % 10;
         var mod100 = number % 100;
-        if (mod10 == 1 && mod100 != 11)
+        if (mod10 === 1 && mod100 !== 11)
         {
             suffix = "st";
         }
-        if (mod10 == 2 && mod100 != 12)
+        else if (mod10 === 2 && mod100 !== 12)
         {
             suffix = "nd";
         }
-        if (mod10 == 3 && mod100 != 13)
+        else if (mod10 === 3 && mod100 !== 13)
         {
             suffix = "rd";
         }
@@ -147,38 +44,38 @@
             weekday: "*",
         };
 
-        switch(interval)
+        switch (currentInterval)
         {
-            case interval.minute:
+            case intervals.minute:
             {
                 break;
             }
-            case interval.hour:
+            case intervals.hour:
             {
                 cron.minute = $minuteSelect.val();
                 break;
             }
-            case interval.day:
+            case intervals.day:
             {
                 cron.minute = $minuteSelect.val();
                 cron.hour = $hourSelect.val();
                 break;
             }
-            case interval.week:
+            case intervals.week:
             {
                 cron.minute = $minuteSelect.val();
                 cron.hour = $hourSelect.val();
                 cron.weekday = $weekdaySelect.val();
                 break;
             }
-            case interval.month:
+            case intervals.month:
             {
                 cron.minute = $minuteSelect.val();
                 cron.hour = $hourSelect.val();
                 cron.monthday = $monthdaySelect.val();
                 break;
             }
-            case interval.year:
+            case intervals.year:
             {
                 cron.minute = $minuteSelect.val();
                 cron.hour = $hourSelect.val();
@@ -191,32 +88,155 @@
         return [cron.minute, cron.hour, cron.monthday, cron.month, cron.weekday].join(" ");
     };
 
-    var setValue = function(cron)
+    var setInterval = function(newInterval)
     {
-        // TODO
-        return intervals.minute;
+        for (var interval in intervals)
+        {
+            if (intervals[interval] !== intervals.none)
+            {
+                $cronSpan.find("> ." + intervals[interval]).hide();
+            }
+        }
+        $cronSpan.find("> ." + newInterval).show();
+        $intervalSelect.val(newInterval);
+        currentInterval = newInterval;
     };
 
-    var $minuteSelect = $("<select>");
-    for (var index = 0; index < 60; index++)
+    var setValue = function(newValue)
     {
-        $("<option>")
-            .attr("value", index)
-            .text(index)
-            .addClass("cron-hour cron-day cron-week cron-month cron-year")
-            .appendTo($minuteSelect);
-    }
+        currentInterval = intervals.none;
 
-    var $hourSelect = $("<select>");
-    for (var index = 0; index < 24; index++)
+        var cron = validateCron(newValue);
+
+        if (cron.minute === "*")
+        {
+            setInterval(intervals.minute);
+        }
+        else
+        {
+            if (cron.hour === "*")
+            {
+                setInterval(intervals.hour);
+                $minuteSelect.val(cron.minute);
+            }
+            else
+            {
+                if (cron.weekday === "*")
+                {
+                    if (cron.monthday === "*")
+                    {
+                        setInterval(intervals.day);
+                        $minuteSelect.val(cron.minute);
+                        $hourSelect.val(cron.hour);
+                    }
+                    else if (cron.month === "*")
+                    {
+                        setInterval(intervals.month);
+                        $minuteSelect.val(cron.minute);
+                        $hourSelect.val(cron.hour);
+                        $monthdaySelect.val(cron.monthday);
+                    }
+                    else
+                    {
+                        setInterval(intervals.year);
+                        $minuteSelect.val(cron.minute);
+                        $hourSelect.val(cron.hour);
+                        $monthdaySelect.val(cron.monthday);
+                        $monthSelect.val(cron.month);
+                    }
+                }
+                else
+                {
+                    setInterval(intervals.weekday);
+                    $minuteSelect.val(cron.minute);
+                    $hourSelect.val(cron.hour);
+                    $weekdaySelect.val(cron.weekday);
+                }
+            }
+        }
+
+        $input.val(newValue);
+    };
+
+    var validateCron = function(cronString)
     {
-        $("<option>")
-            .attr("value", index)
-            .text(index < 10 ? "0" + index : index)
-            .addClass("cron-day cron-week cron-month cron-year")
-            .appendTo($hourSelect);
-    }
+        var cronComponents = cronString.split(" ");
+        if (cronComponents.length !== 5)
+        {
+            $.error("Invalid cron format.");
+        }
 
+        var cron =
+        {
+            minute: cronComponents[0],
+            hour: cronComponents[1],
+            monthday: cronComponents[2],
+            month: cronComponents[3],
+            weekday: cronComponents[4],
+        };
+
+        if (cron.minute !== "*" &&
+            !validateInteger(cron.minute, 0, 59))
+        {
+            $.error("Invalid minute format.");
+        }
+
+        if (cron.hour !== "*" &&
+            !validateInteger(cron.hour, 0, 23))
+        {
+            $.error("Invalid hour format.");
+        }
+
+        if (cron.monthday !== "*" &&
+            !validateInteger(cron.monthday, 1, 31))
+        {
+            $.error("Invalid monthday format.");
+        }
+
+        if (cron.month !== "*" &&
+            !validateInteger(cron.month, 0, 11))
+        {
+            $.error("Invalid month format.");
+        }
+
+        if (cron.weekday !== "*" &&
+            !validateInteger(cron.weekday, 0, 7))
+        {
+            $.error("Invalid weekday format.");
+        }
+
+        // While supported, it's just simpler this way.
+        if (cron.weekday === "7")
+        {
+            cron.weekday = "0";
+        }
+
+        // TODO Weird and unsupported formats
+
+        return cron;
+    };
+
+    var validateInteger = function(integer, minimum, maximum)
+    {
+        var parsedInteger = parseInt(integer);
+        var valid =
+            !isNaN(parsedInteger) &&
+            Number.isInteger(parsedInteger) &&
+            parsedInteger >= minimum &&
+            parsedInteger <= maximum;
+        return valid;
+    };
+
+    var intervals =
+    {
+        "none": "none",
+        "minute": "cron-minute",
+        "hour": "cron-hour",
+        "day": "cron-day",
+        "week": "cron-week",
+        "month": "cron-month",
+        "year": "cron-year",
+    };
     var weekdays =
     [
         "Sunday",
@@ -227,39 +247,202 @@
         "Friday",
         "Saturday"
     ];
-    var $weekdaySelect = $("<select>");
-    for (var index = 0; index < weekdays.length; index++)
-    {
-        $("<option>")
-            .attr("value", index)
-            .text(weekdays[index])
-            .addClass("cron-week")
-            .appendTo($weekdaySelect);
-    }
+    var months =
+    [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+    ];
 
-    var $monthdaySelect = $("<select>");
-    for (var index = 1; index < 32; index++)
+    var $input = null;
+    var $cronSpan = null;
+    var $intervalSelect = null;
+    var $minuteSelect = null;
+    var $hourSelect = null;
+    var $weekdaySelect = null;
+    var $monthdaySelect = null;
+    var $monthSelect = null;
+    var $cronCrontrols = null;
+
+    var currentInterval = intervals.minute;
+    var currentOptions = null;
+
+    var defaultOptions =
     {
-        $("<option>")
-            .attr("value", index)
-            .text(index + getOrdinalSuffix(index))
-            .addClass("cron-month")
-            .appendTo($daySelect);
-    }
+        class: "",
+        disabled: false,
+        // readonly: false, ?
+        // utc: false, ?
+        value: "* * * * *",
+    };
+    var publicFunctions =
+    {
+        initialize: function(options)
+        {
+            $input = $(this);
+
+            if ($input.length !== 1 || !$input.is("input"))
+            {
+                $.error("Element must be a single input.");
+            }
+
+            currentOptions = $.extend({ }, defaultOptions, options);
+
+            $intervalSelect = $("<select>")
+                .prop("disabled", currentOptions.disabled)
+                .on("change", function()
+                {
+                    setInterval($intervalSelect.val());
+                });
+            for (var interval in intervals)
+            {
+                if (intervals[interval] !== intervals.none)
+                {
+                    $("<option>")
+                        .attr("value", intervals[interval])
+                        .text(interval)
+                        .appendTo($intervalSelect);
+                }
+            }
+
+            $minuteSelect = $("<select>")
+                .addClass("cron-control cron-hour cron-day cron-week cron-month cron-year")
+                .prop("disabled", currentOptions.disabled);
+            for (var index = 0; index < 60; index++)
+            {
+                var test = $("<option>")
+                    .attr("value", index)
+                    .text(index < 10 ? "0" + index : index)
+                    .appendTo($minuteSelect);
+            }
+
+            $hourSelect = $("<select>")
+                .addClass("cron-control cron-day cron-week cron-month cron-year")
+                .prop("disabled", currentOptions.disabled);
+            for (var index = 0; index < 24; index++)
+            {
+                $("<option>")
+                    .attr("value", index)
+                    .text(index < 10 ? "0" + index : index)
+                    .appendTo($hourSelect);
+            }
+
+            $weekdaySelect = $("<select>")
+                .addClass("cron-control cron-week")
+                .prop("disabled", currentOptions.disabled);
+            for (var index = 0; index < weekdays.length; index++)
+            {
+                $("<option>")
+                    .attr("value", index)
+                    .text(weekdays[index])
+                    .appendTo($weekdaySelect);
+            }
+
+            $monthdaySelect = $("<select>")
+                .addClass("cron-control cron-month cron-year")
+                .prop("disabled", currentOptions.disabled);
+            for (var index = 1; index < 32; index++)
+            {
+                $("<option>")
+                    .attr("value", index)
+                    .text(index + getOrdinalSuffix(index))
+                    .appendTo($monthdaySelect);
+            }
+
+            $monthSelect = $("<select>")
+                .addClass("cron-control cron-year")
+                .prop("disabled", currentOptions.disabled);
+            for (var index = 0; index < months.length; index++)
+            {
+                $("<option>")
+                    .attr("value", index + 1)
+                    .text(months[index])
+                    .appendTo($monthSelect);
+            }
+
+            $cronSpan = $("<span>")
+                .addClass("cron " + currentOptions.class)
+                .append($("<span>")
+                    .text("Every "))
+                .append($intervalSelect)
+                .append($("<span>")
+                    .text(" on ")
+                    .addClass("cron-week cron-month cron-year"))
+                .append($("<span>")
+                    .text(" the ")
+                    .addClass("cron-month"))
+                .append($weekdaySelect)
+                .append($monthSelect)
+                .append($monthdaySelect)
+                .append($("<span>")
+                    .text(" day ")
+                    .addClass("cron-month"))
+                .append($("<span>")
+                    .text(" at ")
+                    .addClass("cron-hour cron-day cron-week cron-month cron-year"))
+                .append($hourSelect)
+                .append($("<span>")
+                    .text(" : ")
+                    .addClass("cron-day cron-week cron-month cron-year"))
+                .append($minuteSelect)
+                .append($("<span>")
+                    .text(" minutes past the hour")
+                    .addClass("cron-hour"));
+
+            $cronControls = $cronSpan
+                .find("> select.cron-control")
+                .on("change", function()
+                {
+                    $input.val(getValue());
+                });
+
+            $input
+                .hide()
+                .after($cronSpan);
+
+            setValue(currentOptions.value);
+        },
+        disabled: function(disabled)
+        {
+            currentOptions.disabled = disabled;
+            $intervalSelect.prop("disabled", currentOptions.disabled);
+            $cronControls.prop("disabled", currentOptions.disabled);
+        },
+        value: function(cron)
+        {
+            if (typeof(cron) !== "undefined")
+            {
+                setValue(cron);
+            }
+            else
+            {
+                return getValue();
+            }
+        },
+    };
 
     $.fn.cron = function(parameter)
     {
-        if (typeof(methods[parameter]) !== "undefined")
+        if (typeof(publicFunctions[parameter]) !== "undefined")
         {
-            return methods[parameter].apply(this, Array.prototype.slice.call(arguments, 1));
+            return publicFunctions[parameter].apply(this, Array.prototype.slice.call(arguments, 1));
         }
         else if (typeof(parameter) === "undefined" || typeof(parameter) === "object")
         {
-            return methods.init.apply(this, arguments);
+            return publicFunctions.initialize.apply(this, arguments);
         }
         else
         {
-            $.error("Unsupported");
+            $.error("Unsupported cron function.");
         }
     };
 })($);
