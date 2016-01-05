@@ -1,6 +1,6 @@
-# jcron
+# jCron
 
-jcron is a [jQuery] plugin for presenting a basic interface for users to specify simple cron entries.
+jCron is a [jQuery] plugin for presenting a basic interface for users to specify simple cron entries.
 
 Simple cron entries are limited to the following:
 ```
@@ -80,7 +80,7 @@ $("#input")
 
 * This is a utility for *simple* crons.
 * The cron value will always be maintained in the targeted input element for simple form submission.
-* jQuery-cron doesn't mess around with base1 weeks and instead converts them to base0.
+* jCron doesn't mess around with base1 weekday values and instead converts them to base0.
 
 ## Others
 
