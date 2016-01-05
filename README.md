@@ -1,6 +1,6 @@
-# jQuery-cron
+# jcron
 
-jQuery-cron is a [jQuery] plugin for presenting a basic interface for users to specify simple cron entries.
+jcron is a [jQuery] plugin for presenting a basic interface for users to specify simple cron entries.
 
 Simple cron entries are limited to the following:
 ```
