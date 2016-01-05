@@ -45,7 +45,7 @@ The following initialization options are supported:
 
 * value
   * If unspecified, the input's value will be used
-  * If the input's value is unspecified, a default value of "* * * * *" will be used
+  * If unspecified and the input's value is unspecified, "* * * * *" will be used
   * Default value: ""
 
 ### Functions
