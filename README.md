@@ -4,12 +4,12 @@ jQuery-cron is a [jQuery] plugin for presenting a basic interface for users to s
 
 Simple cron entries are limited to the following:
 ```
-* Every minute : * * * * *
-* Every hour   : ? * * * *
-* Every day    : ? ? * * *
-* Every week   : ? ? * * ?
-* Every month  : ? ? ? * *
-* Every year   : ? ? ? ? *
+Every minute : * * * * *
+Every hour   : ? * * * *
+Every day    : ? ? * * *
+Every week   : ? ? * * ?
+Every month  : ? ? ? * *
+Every year   : ? ? ? ? *
 ```
 
 ## Dependencies

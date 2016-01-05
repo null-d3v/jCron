@@ -1,0 +1,27 @@
+{
+    "name": "jquery-cron",
+    "description": "jQuery-cron is a jQuery plugin for presenting a basic interface for users to specify simple cron entries.",
+    "main": [
+        "js/jquery-cron.js"
+    ],
+    "dependencies": {
+        "jquery": "latest"
+    },
+    "devDependencies": {
+    },
+    "moduleType": [
+        "globals"
+    ],
+    "keywords": [
+        "jquery",
+        "cron"
+    ],
+    "authors": [
+        "null-d3v"
+    ],
+    "license": "MIT",
+    "ignore": [
+        "**/.*"
+    ],
+    "private": true
+}
