@@ -1,40 +1,93 @@
-# jQuery plugin: cron
+# jQuery-cron
 
-jquery-cron is a [jQuery] plugin for 
-presenting a simplified interface for users to specify cron entries.
+jQuery-cron is a [jQuery] plugin for presenting a basic interface for users to specify simple cron entries.
 
-Check out the [jquery-cron] website for more information.
-
-There is much to be done on the flexibility and robustness front, 
-and we welcome contributions and bug fixes. Feel free to fork 
-and send us pull requests!
+Simple cron entries are limited to the following:
+```
+* Every minute : * * * * *
+* Every hour   : ? * * * *
+* Every day    : ? ? * * *
+* Every week   : ? ? * * ?
+* Every month  : ? ? ? * *
+* Every year   : ? ? ? ? *
+```
 
 ## Dependencies
 
- * [jQuery]
- * [jquery-gentleSelect] (optional)
+* [jQuery]
 
 ## Usage
 
-To use this plugin, one simply needs to load [jQuery]
-and the JS/CSS scripts for jquery-cron, then attach it an empty `<DIV>`
-on DOM ready:
+### Initialization
 
-    $(document).ready(function() {
-        $('#selector').cron();
+Invoke the cron function on a jQuery selector containing a single input element.
+
+```
+$(document).ready(function()
+{
+    $("#input").cron();
+
+    // or
+
+    $("#input").cron(
+    {
+        disabled: false,
+        value: "",
     });
-    </script>
+});
+```
 
-For more options, see the [jquery-cron] website.
+The following initialization options are supported:
 
+* disabled
+** If true, all cron controls will be disabled
+** Default value: false
+
+* value
+** If unspecified, the input's value will be used
+** If the input's value is unspecified, a default value of "* * * * *" will be used
+** Default value: ""
+
+### Functions
+
+Functions can be accessed by invoking the cron function on a single input element with the first parameter representing the function name.
+
+* disabled
+** Gets or sets the option to disable all interactive functionality.
+** `$("#input").cron("disabled")`
+*** returns false
+** `$("#input").cron("disabled", true)`
+
+* value
+** Gets or sets the current cron value.
+** This will not fire the change event.
+** Note that the cron value is also maintained in the targeted input element.
+** `$("#input").cron("value")`
+*** returns "* * * * *"
+** `$("#input").cron("value", "0 * * * *")`
+
+### Change events
+
+Change events are propagated through the targeted input element.
+
+```
+$("#input")
+    .cron()
+    .on("change", function() { });
+```
+
+### General Notes
+
+* This is a utility for *simple* crons.
+* The cron value will always be maintained in the targeted input element for simple form submission.
+* jQuery-cron doesn't mess around with base1 weeks and instead converts them to base0.
 
 ## Others
 
-Copyright (c) 2010-2013, Shawn Chin.
+[Original implementation] by Shawn Chin.
 
 This project is licensed under the [MIT license].
 
- [jQuery]: http://jquery.com "jQuery"
- [jquery-cron]: http://shawnchin.github.com/jquery-cron "jquery-cron"
- [jquery-gentleSelect]: http://shawnchin.github.com/jquery-gentleSelect "jquery-gentleSelect"
- [MIT License]: http://www.opensource.org/licenses/mit-license.php "MIT License"
+[jQuery]: http://jquery.com "jQuery"
+[Original implementation]: http://shawnchin.github.com/jquery-cron "Original implementation"
+[MIT License]: http://www.opensource.org/licenses/mit-license.php "MIT License"

@@ -247,6 +247,7 @@
         "Friday",
         "Saturday"
     ];
+    // TODO Maximum days per month for year interval.
     var months =
     [
         "January",
@@ -278,13 +279,10 @@
 
     var defaultOptions =
     {
-        class: "",
         disabled: false,
-        // readonly: false, ?
-        // utc: false, ?
-        value: "* * * * *",
+        value: "",
     };
-    var publicFunctions =
+    var functions =
     {
         initialize: function(options)
         {
@@ -298,7 +296,7 @@
             currentOptions = $.extend({ }, defaultOptions, options);
 
             $intervalSelect = $("<select>")
-                .prop("disabled", currentOptions.disabled)
+                .addClass("cron-control")
                 .on("change", function()
                 {
                     setInterval($intervalSelect.val());
@@ -315,8 +313,7 @@
             }
 
             $minuteSelect = $("<select>")
-                .addClass("cron-control cron-hour cron-day cron-week cron-month cron-year")
-                .prop("disabled", currentOptions.disabled);
+                .addClass("cron-control cron-hour cron-day cron-week cron-month cron-year");
             for (var index = 0; index < 60; index++)
             {
                 var test = $("<option>")
@@ -326,8 +323,7 @@
             }
 
             $hourSelect = $("<select>")
-                .addClass("cron-control cron-day cron-week cron-month cron-year")
-                .prop("disabled", currentOptions.disabled);
+                .addClass("cron-control cron-day cron-week cron-month cron-year");
             for (var index = 0; index < 24; index++)
             {
                 $("<option>")
@@ -337,8 +333,7 @@
             }
 
             $weekdaySelect = $("<select>")
-                .addClass("cron-control cron-week")
-                .prop("disabled", currentOptions.disabled);
+                .addClass("cron-control cron-week");
             for (var index = 0; index < weekdays.length; index++)
             {
                 $("<option>")
@@ -348,8 +343,7 @@
             }
 
             $monthdaySelect = $("<select>")
-                .addClass("cron-control cron-month cron-year")
-                .prop("disabled", currentOptions.disabled);
+                .addClass("cron-control cron-month cron-year");
             for (var index = 1; index < 32; index++)
             {
                 $("<option>")
@@ -359,8 +353,7 @@
             }
 
             $monthSelect = $("<select>")
-                .addClass("cron-control cron-year")
-                .prop("disabled", currentOptions.disabled);
+                .addClass("cron-control cron-year");
             for (var index = 0; index < months.length; index++)
             {
                 $("<option>")
@@ -370,7 +363,7 @@
             }
 
             $cronSpan = $("<span>")
-                .addClass("cron " + currentOptions.class)
+                .addClass("cron")
                 .append($("<span>")
                     .text("Every "))
                 .append($intervalSelect)
@@ -402,20 +395,30 @@
                 .find("> select.cron-control")
                 .on("change", function()
                 {
-                    $input.val(getValue());
+                    $input
+                        .val(getValue())
+                        .trigger("change");
                 });
 
             $input
                 .hide()
                 .after($cronSpan);
 
-            setValue(currentOptions.value);
+            functions.disabled(currentOptions.disabled);
+            functions.value(currentOptions.value || $input.val() || "* * * * *");
         },
         disabled: function(disabled)
         {
-            currentOptions.disabled = disabled;
-            $intervalSelect.prop("disabled", currentOptions.disabled);
-            $cronControls.prop("disabled", currentOptions.disabled);
+            if (typeof(disabled) !== "undefined")
+            {
+                currentOptions.disabled = disabled;
+                $input.prop("disabled", currentOptions.disabled);
+                $cronControls.prop("disabled", currentOptions.disabled);
+            }
+            else
+            {
+                return currentOptions.disabled;
+            }
         },
         value: function(cron)
         {
@@ -432,13 +435,14 @@
 
     $.fn.cron = function(parameter)
     {
-        if (typeof(publicFunctions[parameter]) !== "undefined")
+        if (typeof(functions[parameter]) !== "undefined" &&
+            functions[parameter] !== functions.initialize)
         {
-            return publicFunctions[parameter].apply(this, Array.prototype.slice.call(arguments, 1));
+            return functions[parameter].apply(this, Array.prototype.slice.call(arguments, 1));
         }
         else if (typeof(parameter) === "undefined" || typeof(parameter) === "object")
         {
-            return publicFunctions.initialize.apply(this, arguments);
+            return functions.initialize.apply(this, arguments);
         }
         else
         {
