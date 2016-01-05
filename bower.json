@@ -1,8 +1,8 @@
 {
-    "name": "jcron",
-    "description": "jcron is a jQuery plugin for presenting a basic interface for users to specify simple cron entries.",
+    "name": "jCron",
+    "description": "jCron is a jQuery plugin for presenting a basic interface for users to specify simple cron entries.",
     "main": [
-        "js/jquery-cron.js"
+        "js/jCron.js"
     ],
     "dependencies": {
         "jquery": "latest"
@@ -23,5 +23,5 @@
     "ignore": [
         "**/.*"
     ],
-    "private": true
+    "private": false
 }
