@@ -40,31 +40,31 @@ $(document).ready(function()
 The following initialization options are supported:
 
 * disabled
-** If true, all cron controls will be disabled
-** Default value: false
+  * If true, all cron controls will be disabled
+  * Default value: false
 
 * value
-** If unspecified, the input's value will be used
-** If the input's value is unspecified, a default value of "* * * * *" will be used
-** Default value: ""
+  * If unspecified, the input's value will be used
+  * If the input's value is unspecified, a default value of "* * * * *" will be used
+  * Default value: ""
 
 ### Functions
 
 Functions can be accessed by invoking the cron function on a single input element with the first parameter representing the function name.
 
 * disabled
-** Gets or sets the option to disable all interactive functionality.
-** `$("#input").cron("disabled")`
-*** returns false
-** `$("#input").cron("disabled", true)`
+  * Gets or sets the option to disable all interactive functionality.
+  * `$("#input").cron("disabled")`
+    * returns false
+  * `$("#input").cron("disabled", true)`
 
 * value
-** Gets or sets the current cron value.
-** This will not fire the change event.
-** Note that the cron value is also maintained in the targeted input element.
-** `$("#input").cron("value")`
-*** returns "* * * * *"
-** `$("#input").cron("value", "0 * * * *")`
+  * Gets or sets the current cron value.
+  * This will not fire the change event.
+  * Note that the cron value is also maintained in the targeted input element.
+  * `$("#input").cron("value")`
+    * returns "* * * * *"
+  * `$("#input").cron("value", "0 * * * *")`
 
 ### Change events
 
