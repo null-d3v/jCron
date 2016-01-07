@@ -39,31 +39,31 @@ $(document).ready(function()
 
 The following initialization options are supported:
 
-* disabled
-  * If true, all cron controls will be disabled
-  * Default value: false
+* `disabled`
+  * If `true`, all cron controls will be disabled.
+  * Default value: `false`
 
-* value
-  * If unspecified, the input's value will be used
-  * If unspecified and the input's value is unspecified, "* * * * *" will be used
-  * Default value: ""
+* `value`
+  * If unspecified, the input's value will be used.
+  * If unspecified and the input's value is unspecified, `"* * * * *"` will be used.
+  * Default value: `""`
 
 ### Functions
 
 Functions can be accessed by invoking the cron function on a single input element with the first parameter representing the function name.
 
-* disabled
+* `disabled`
   * Gets or sets the option to disable all interactive functionality.
   * `$("#input").cron("disabled")`
-    * returns false
+    * returns `false`
   * `$("#input").cron("disabled", true)`
 
-* value
+* `value`
   * Gets or sets the current cron value.
   * This will not fire the change event.
   * Note that the cron value is also maintained in the targeted input element.
   * `$("#input").cron("value")`
-    * returns "* * * * *"
+    * returns `"* * * * *"`
   * `$("#input").cron("value", "0 * * * *")`
 
 ### Change events
@@ -81,6 +81,12 @@ $("#input")
 * This is a utility for *simple* crons.
 * The cron value will always be maintained in the targeted input element for simple form submission.
 * jCron doesn't mess around with base1 weekday values and instead converts them to base0.
+
+## Investigate and Implement TODO
+
+* Knockout binding handler.
+* Advanced mode for manual entry.
+* Testing framework.
 
 ## Others
 
