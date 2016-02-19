@@ -164,7 +164,7 @@
         {
             var scope = this;
 
-            if (typeof($input) !== undefined)
+            if ($input !== null)
             {
                 $.error("Element has already been initialized.");
             }
