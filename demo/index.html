@@ -1,0 +1,40 @@
+<!DOCTYPE html><html><head>
+  <meta charset='utf-8'>
+  <title>jsCron demo and test page</title>
+  <script src='../js/jsCron.js'></script>
+</head><body>
+  <input> <br>
+  <input id='display'><br>
+  <button>Set to * * * * *</button> <br>
+  <button>Set to 59 * * * *</button> <br>
+  <button>Set to 59 23 * * *</button> <br>
+  <button>Set to 59 23 28 * *</button> <br>
+  <button>Set to 59 23 28 11 *</button> <br>
+  <button>Set to 59 23 * * 6</button> <br>
+  
+  <button id='no'>Disable</button> <br>
+  <button id='yes'>Enable</button> <br>
+  
+  <script>( function(){
+
+     var i = document.querySelector( 'input' ), display = document.querySelector( '#display' );
+     var cronObj = new jsCron( i );
+     // Update display when input is changed.
+     i.addEventListener( 'change', e => display.value = i.value );
+
+     // Set cron to a specific value
+     [].forEach.call( document.querySelectorAll( 'button' ), e => {
+        if ( ! e.textContent.startsWith( 'Set to ' ) ) return;
+        e.addEventListener( 'click', evt => {
+           cronObj.value = evt.target.textContent.substr( 7 );
+           i.dispatchEvent( new Event( 'change' ) );
+        } );
+     } );
+     display.value = i.value;
+     
+     // Enable / Disable
+     document.querySelector( '#yes' ).addEventListener( 'click', e => cronObj.disabled = false );
+     document.querySelector( '#no'  ).addEventListener( 'click', e => cronObj.disabled = true );
+  
+  })() </script>
+</body></html>

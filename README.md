@@ -1,6 +1,8 @@
-# jCron
+# jsCron
 
-jCron is a [jQuery] plugin for presenting a basic interface for users to specify simple cron entries.
+jsCron is a javascript library for presenting a basic interface for users to specify simple cron entries.
+
+It is forked from jCron/jquery-cron and does not need jQuery.
 
 Simple cron entries are limited to the following:
 ```
@@ -12,10 +14,6 @@ Every month  : ? ? ? * *
 Every year   : ? ? ? ? *
 ```
 
-## Dependencies
-
-* [jQuery]
-
 ## Usage
 
 ### Initialization
@@ -23,17 +21,13 @@ Every year   : ? ? ? ? *
 Invoke the cron function on a jQuery selector containing a single input element.
 
 ```
-$(document).ready(function()
-{
-    $("#input").cron();
+new jsCron( inputElement );
 
-    // or
+// or
 
-    $("#input").cron(
-    {
-        disabled: false,
-        value: "",
-    });
+var cronObj = new jsCron( inputElement, {
+    disabled: false,
+    value: "",
 });
 ```
 
@@ -48,32 +42,46 @@ The following initialization options are supported:
   * If unspecified and the input's value is unspecified, `"* * * * *"` will be used.
   * Default value: `""`
 
-### Functions
+* `className`
+  * Class name of the container of cron inputs.
+  * Default value: `""`
 
-Functions can be accessed by invoking the cron function on a single input element with the first parameter representing the function name.
+* `style`
+  * The cron inputs are placed in a &lt;div&gt; container.  To make it work like an input, its has a default inline style.
+  * Default value: `"display: inline"`
+
+* `position`
+  * Put the cron inputs "before", "after", or "replace" the original input.
+  * In case of replace, the input will be removed and appended inside the cron container.
+  * Default value: `"after"`
+
+### Status
+
+States can be accessed directly from the returned object.
 
 * `disabled`
   * Gets or sets the option to disable all interactive functionality.
-  * `$("#input").cron("disabled")`
+  * `cronObj.disabled`
     * returns `false`
-  * `$("#input").cron("disabled", true)`
+  * `cronObj.disabled = true`
 
 * `value`
   * Gets or sets the current cron value.
   * This will not fire the change event.
   * Note that the cron value is also maintained in the targeted input element.
-  * `$("#input").cron("value")`
+  * `cronObj.value`
     * returns `"* * * * *"`
-  * `$("#input").cron("value", "0 * * * *")`
+  * `cronObj.value = "0 * * * *"`
 
 ### Change events
 
 Change events are propagated through the targeted input element.
 
 ```
-$("#input")
-    .cron()
-    .on("change", function() { });
+new jsCron( inputElement );
+inputElement.addEventListener( 'change', ( event ) => {
+  /* Triggered when any cron selection changes */ 
+});
 ```
 
 ### General Notes
@@ -84,9 +92,10 @@ $("#input")
 
 ## Investigate and Implement TODO
 
-* Knockout binding handler.
+* Unit test.
+* Internationalisation.
 * Advanced mode for manual entry.
-* Testing framework.
+* Multi-select.
 
 ## Others
 
