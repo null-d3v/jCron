@@ -350,7 +350,7 @@
                     }
                     else
                     {
-                        this._setInterval(intervals.weekday);
+                        this._setInterval(intervals.week);
                         $minuteSelect.val(cron.minute);
                         $hourSelect.val(cron.hour);
                         $weekdaySelect.val(cron.weekday);
