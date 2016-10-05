@@ -1,111 +1,148 @@
 /*
- * Cron jQuery plugin (version 1.0.0)
- * https://github.com/null-d3v/jquery-cron
+ * Cron javascript library (version 1.0.0)
+ * https://github.com/Sheep-y/jsCron
  *
- * Copyright 2016 null-d3v
+ * Copyright 2010-2013 Shawn Chin, 2016 null-d3v / sheepy
  * Released under the MIT license
  */
-(function($)
-{
-    var intervals =
-    {
-        "none": "none",
-        "minute": "cron-minute",
-        "hour": "cron-hour",
-        "day": "cron-day",
-        "week": "cron-week",
-        "month": "cron-month",
-        "year": "cron-year",
+(function( out ){
+    const jsCron = function(element, options) {
+       this.initialize(element, options);
     };
-    var weekdays =
-    [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday"
-    ];
+
+    const intervals =
+        {
+            "none": "none",
+            "minute": "cron-minute",
+            "hour": "cron-hour",
+            "day": "cron-day",
+            "week": "cron-week",
+            "month": "cron-month",
+            "year": "cron-year",
+        };
+    // Must be already escaped as HTML
+    const weekdays = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ];
+
     // TODO Maximum days per month for year interval.
-    var months =
-    [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
-    ];
+    // Must be already escaped as HTML
+    const months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 
-    var defaultOptions =
-    {
-        disabled: false,
-        value: "",
-    };
-
-    var Cron = function()
-    {
-        var $input = null;
-        var $cronSpan = null;
-        var $intervalSelect = null;
-        var $minuteSelect = null;
-        var $hourSelect = null;
-        var $weekdaySelect = null;
-        var $monthdaySelect = null;
-        var $monthSelect = null;
-        var $cronCrontrols = null;
-
-        var currentInterval = intervals.minute;
-        var currentOptions = null;
-
-        this._disabled = function(disabled)
+    const defaultOptions =
         {
-            if (typeof(disabled) !== "undefined")
-            {
-                currentOptions.disabled = disabled;
-                $input.prop("disabled", currentOptions.disabled);
-                $cronControls.prop("disabled", currentOptions.disabled);
-            }
-            else
-            {
-                return currentOptions.disabled;
-            }
+            disabled: false,
+            value: "",
+            style: "display: inline",
+            className: "",
+            position: "after",
         };
 
-        this._getOrdinalSuffix = function(number)
+    jsCron.prototype =
+    {
+        input : null,
+        rootElement : null,
+        intervalSelect : null,
+        minuteSelect : null,
+        hourSelect : null,
+        weekdaySelect : null,
+        monthdaySelect : null,
+        monthSelect : null,
+
+        currentInterval : intervals.minute,
+        currentOptions : null,
+
+        initialize (element, options)
         {
-            var suffix = "";
+            if (this.input !== null)
+                return console.error("Element has already been initialized.");
 
-            var mod10 = number % 10;
-            var mod100 = number % 100;
-            if (mod10 === 1 && mod100 !== 11)
+            const input = this.input = element;
+
+            if (!input instanceof Element || !input.tagName === "INPUT")
+                return console.error("Element must be a single input.");
+
+            options = this.currentOptions = Object.assign({ }, defaultOptions, options);
+
+            let intervalSelect = "<select class='cron-control'>";
+            for (let interval in intervals)
             {
-                suffix = "st";
+                if (intervals[interval] !== intervals.none)
+                {
+                    intervalSelect += "<option value='" + intervals[interval] + "'>" + interval;
+                }
             }
-            else if (mod10 === 2 && mod100 !== 12)
-            {
-                suffix = "nd";
-            }
-            else if (mod10 === 3 && mod100 !== 13)
-            {
-                suffix = "rd";
-            }
-            else
-            {
-                suffix = "th";
+            intervalSelect += "</select>";
+
+            const minuteSelect = buildSelect( 'cron-control cron-hour cron-day cron-week cron-month cron-year', 0, 60, twoDigits );
+
+            const hourSelect = buildSelect( 'cron-control cron-day cron-week cron-month cron-year', 0, 24, twoDigits );
+
+            const weekdaySelect = buildSelect( 'cron-control cron-week', 0, 7, i => weekdays[i] );
+
+            const monthdaySelect = buildSelect( 'cron-control cron-month cron-year', 1, 32, getOrdinalSuffix );
+
+            const monthSelect = buildSelect( 'cron-control cron-year', 0, 12, i => months[i] );
+
+            const root = this.rootElement = document.createRange().createContextualFragment(
+                    `<div style="${options.style}">Every `
+                    + intervalSelect
+                    + " <span class='cron-week cron-month cron-year'> on </span>"
+                    + " <span class='cron-month'> the </span>"
+                    + weekdaySelect
+                    + monthSelect
+                    + monthdaySelect
+                    + "<span class='cron-month'> day </span>"
+                    + "<span class='cron-hour cron-day cron-week cron-month cron-year'> at </span>"
+                    + hourSelect
+                    + "<span class='cron-day cron-week cron-month cron-year'> : </span>"
+                    + minuteSelect
+                    + "<span class='cron-hour'> minutes past the hour </span>"
+                + "</div>" ).firstChild;
+            root.className = options.className;
+            root.classList.add( 'cron' );
+
+            root.addEventListener("change", ( event ) =>
+                {
+                    input.value = this.value;
+                    input.dispatchEvent( new Event( 'change' ) );
+                });
+            [ this.intervalSelect, this.weekdaySelect, this.monthSelect, this.monthdaySelect, this.hourSelect, this.minuteSelect ] = this.controls;
+
+            this.intervalSelect.addEventListener("change", e => this._setInterval(this.intervalSelect.value) );
+
+            input.style.display = "none";
+            if ( options.position === "before" )
+                input.parentNode.insertBefore( root, input );
+            else if ( options.position === "after" )
+                input.parentNode.insertBefore( root, input.nextSibling );
+            else if ( options.position === "replace" ) {
+                input.parentNode.insertBefore( root, input );
+                input.remove();
+                root.appendChild( input );
             }
 
-            return suffix;
-        };
+            this.disabled = options.disabled;
+            this.value = options.value || input.value || "* * * * *";
+        },
 
-        this._getValue = function()
+        _setInterval : function(newInterval)
+        {
+            for (var interval in intervals)
+            {
+                if (intervals[interval] !== intervals.none)
+                {
+                    [].forEach.call( this.rootElement.getElementsByClassName(intervals[interval]), e => e.style.display = "none" );
+                }
+            }
+            [].forEach.call( this.rootElement.getElementsByClassName(newInterval), e => e.style.display = "" );
+            this.intervalSelect.value = newInterval;
+            this.currentInterval = newInterval;
+        },
+
+        get controls () {
+           return this.rootElement.querySelectorAll( "select.cron-control" );
+        },
+
+        get value ()
         {
             var cron =
             {
@@ -116,386 +153,146 @@
                 weekday: "*",
             };
 
-            switch (currentInterval)
+            switch (this.currentInterval)
             {
                 case intervals.minute:
-                {
                     break;
-                }
-                case intervals.hour:
-                {
-                    cron.minute = $minuteSelect.val();
-                    break;
-                }
-                case intervals.day:
-                {
-                    cron.minute = $minuteSelect.val();
-                    cron.hour = $hourSelect.val();
-                    break;
-                }
-                case intervals.week:
-                {
-                    cron.minute = $minuteSelect.val();
-                    cron.hour = $hourSelect.val();
-                    cron.weekday = $weekdaySelect.val();
-                    break;
-                }
-                case intervals.month:
-                {
-                    cron.minute = $minuteSelect.val();
-                    cron.hour = $hourSelect.val();
-                    cron.monthday = $monthdaySelect.val();
-                    break;
-                }
+
                 case intervals.year:
-                {
-                    cron.minute = $minuteSelect.val();
-                    cron.hour = $hourSelect.val();
-                    cron.monthday = $monthdaySelect.val();
-                    cron.month = $monthSelect.val();
+                    cron.month = this.monthSelect.value;
+                    // fall through
+                case intervals.month:
+                    cron.monthday = this.monthdaySelect.value;
+                    // fall through
+                case intervals.day:
+                    cron.hour = this.hourSelect.value;
+                    // fall through
+                case intervals.hour:
+                    cron.minute = this.minuteSelect.value;
                     break;
-                }
+
+                case intervals.week:
+                    cron.minute = this.minuteSelect.value;
+                    cron.hour = this.hourSelect.value;
+                    cron.weekday = this.weekdaySelect.value;
+                    break;
             }
 
             return [cron.minute, cron.hour, cron.monthday, cron.month, cron.weekday].join(" ");
-        };
+        },
 
-        this._initialize = function($element, options)
+        set value (newValue)
         {
-            var scope = this;
+            this.currentInterval = intervals.none;
 
-            if ($input !== null)
-            {
-                $.error("Element has already been initialized.");
-            }
+            var cron = validateCron(newValue);
 
-            $input = $element;
+            this._setInterval(intervals.year);
 
-            if ($input.length !== 1 || !$input.is("input"))
-            {
-                $.error("Element must be a single input.");
-            }
+            if (cron.month === "*")
+                this._setInterval(intervals.month);
+            else
+                this.monthSelect.value = cron.month;
 
-            currentOptions = $.extend({ }, defaultOptions, options);
+            if (cron.monthday === "*")
+                this._setInterval(intervals.day);
+            else
+                this.monthdaySelect.value = cron.monthday;
+               
+            if (cron.hour === "*")
+                this._setInterval(intervals.hour);
+            else
+                this.hourSelect.value = cron.hour;
 
-            $intervalSelect = $("<select>")
-                .addClass("cron-control")
-                .on("change", function()
-                {
-                    scope._setInterval($intervalSelect.val());
-                });
-            for (var interval in intervals)
-            {
-                if (intervals[interval] !== intervals.none)
-                {
-                    $("<option>")
-                        .attr("value", intervals[interval])
-                        .text(interval)
-                        .appendTo($intervalSelect);
-                }
-            }
-
-            $minuteSelect = $("<select>")
-                .addClass("cron-control cron-hour cron-day cron-week cron-month cron-year");
-            for (var index = 0; index < 60; index++)
-            {
-                var test = $("<option>")
-                    .attr("value", index)
-                    .text(index < 10 ? "0" + index : index)
-                    .appendTo($minuteSelect);
-            }
-
-            $hourSelect = $("<select>")
-                .addClass("cron-control cron-day cron-week cron-month cron-year");
-            for (var index = 0; index < 24; index++)
-            {
-                $("<option>")
-                    .attr("value", index)
-                    .text(index < 10 ? "0" + index : index)
-                    .appendTo($hourSelect);
-            }
-
-            $weekdaySelect = $("<select>")
-                .addClass("cron-control cron-week");
-            for (var index = 0; index < weekdays.length; index++)
-            {
-                $("<option>")
-                    .attr("value", index)
-                    .text(weekdays[index])
-                    .appendTo($weekdaySelect);
-            }
-
-            $monthdaySelect = $("<select>")
-                .addClass("cron-control cron-month cron-year");
-            for (var index = 1; index < 32; index++)
-            {
-                $("<option>")
-                    .attr("value", index)
-                    .text(index + this._getOrdinalSuffix(index))
-                    .appendTo($monthdaySelect);
-            }
-
-            $monthSelect = $("<select>")
-                .addClass("cron-control cron-year");
-            for (var index = 0; index < months.length; index++)
-            {
-                $("<option>")
-                    .attr("value", index + 1)
-                    .text(months[index])
-                    .appendTo($monthSelect);
-            }
-
-            $cronSpan = $("<span>")
-                .addClass("cron")
-                .append($("<span>")
-                    .text("Every "))
-                .append($intervalSelect)
-                .append($("<span>")
-                    .text(" on ")
-                    .addClass("cron-week cron-month cron-year"))
-                .append($("<span>")
-                    .text(" the ")
-                    .addClass("cron-month"))
-                .append($weekdaySelect)
-                .append($monthSelect)
-                .append($monthdaySelect)
-                .append($("<span>")
-                    .text(" day ")
-                    .addClass("cron-month"))
-                .append($("<span>")
-                    .text(" at ")
-                    .addClass("cron-hour cron-day cron-week cron-month cron-year"))
-                .append($hourSelect)
-                .append($("<span>")
-                    .text(" : ")
-                    .addClass("cron-day cron-week cron-month cron-year"))
-                .append($minuteSelect)
-                .append($("<span>")
-                    .text(" minutes past the hour")
-                    .addClass("cron-hour"));
-
-            $cronControls = $cronSpan
-                .find("> select.cron-control")
-                .on("change", function()
-                {
-                    $input
-                        .val(scope._getValue())
-                        .trigger("change");
-                });
-
-            $input
-                .hide()
-                .after($cronSpan);
-
-            this._disabled(currentOptions.disabled);
-            this._setValue(currentOptions.value || $input.val() || "* * * * *");
-        };
-
-        this._setInterval = function(newInterval)
-        {
-            for (var interval in intervals)
-            {
-                if (intervals[interval] !== intervals.none)
-                {
-                    $cronSpan.find("> ." + intervals[interval]).hide();
-                }
-            }
-            $cronSpan.find("> ." + newInterval).show();
-            $intervalSelect.val(newInterval);
-            currentInterval = newInterval;
-        };
-
-        this._setValue = function(newValue)
-        {
-            currentInterval = intervals.none;
-
-            var cron = this._validateCron(newValue);
-
-            if (cron.minute === "*")
-            {
+             if (cron.minute === "*")
                 this._setInterval(intervals.minute);
-            }
             else
+                this.minuteSelect.value = cron.minute;
+
+            if (cron.weekday !== "*")
             {
-                if (cron.hour === "*")
-                {
-                    this._setInterval(intervals.hour);
-                    $minuteSelect.val(cron.minute);
-                }
-                else
-                {
-                    if (cron.weekday === "*")
-                    {
-                        if (cron.monthday === "*")
-                        {
-                            this._setInterval(intervals.day);
-                            $minuteSelect.val(cron.minute);
-                            $hourSelect.val(cron.hour);
-                        }
-                        else if (cron.month === "*")
-                        {
-                            this._setInterval(intervals.month);
-                            $minuteSelect.val(cron.minute);
-                            $hourSelect.val(cron.hour);
-                            $monthdaySelect.val(cron.monthday);
-                        }
-                        else
-                        {
-                            this._setInterval(intervals.year);
-                            $minuteSelect.val(cron.minute);
-                            $hourSelect.val(cron.hour);
-                            $monthdaySelect.val(cron.monthday);
-                            $monthSelect.val(cron.month);
-                        }
-                    }
-                    else
-                    {
-                        this._setInterval(intervals.week);
-                        $minuteSelect.val(cron.minute);
-                        $hourSelect.val(cron.hour);
-                        $weekdaySelect.val(cron.weekday);
-                    }
-                }
+                this._setInterval(intervals.week);
+                this.weekdaySelect.value = cron.weekday;
             }
 
-            $input.val(newValue);
+            this.input.value = newValue;
+        },
+
+        get disabled ()
+        {
+            return this.currentOptions.disabled;
+        },
+
+        set disabled (disabled)
+        {
+            this.input.disabled = this.currentOptions.disabled = disabled;
+            [].forEach.call( this.controls, e => e.disabled = disabled );
+        },
+    };
+
+    function twoDigits ( i ) {
+       return `0${i}`.substr( -2 );
+    }
+
+    function getOrdinalSuffix ( number )
+    {
+        const s = ["th", "st", "nd", "rd"], v = number % 100;
+        return number + ( s[(v-20)%10] || s[v] || s[0] );
+    }
+
+    function validateInteger ( integer, minimum, maximum )
+    {
+        if ( integer === '*' ) return true;
+        const parsed = parseInt(integer);
+        return parsed === parsed && 
+                 String(parsed) == integer &&
+                 parsed >= minimum &&
+                 parsed <= maximum;
+    }
+
+    function validateCron (cronString)
+    {
+        var cronComponents = cronString.split(" ");
+        if (cronComponents.length !== 5)
+            return console.error("Invalid cron format.");
+
+        var cron =
+        {
+            minute: cronComponents[0],
+            hour: cronComponents[1],
+            monthday: cronComponents[2],
+            month: cronComponents[3],
+            weekday: cronComponents[4],
         };
 
-        this._validateCron = function(cronString)
-        {
-            var cronComponents = cronString.split(" ");
-            if (cronComponents.length !== 5)
-            {
-                $.error("Invalid cron format.");
-            }
+        if ( ! validateInteger(cron.minute, 0, 59) )
+            return console.error("Invalid minute format: " + cron.minute);
 
-            var cron =
-            {
-                minute: cronComponents[0],
-                hour: cronComponents[1],
-                monthday: cronComponents[2],
-                month: cronComponents[3],
-                weekday: cronComponents[4],
-            };
+        if ( ! validateInteger(cron.hour, 0, 23) )
+            return console.error("Invalid hour format: " + cron.hour);
 
-            if (cron.minute !== "*" &&
-                !this._validateInteger(cron.minute, 0, 59))
-            {
-                $.error("Invalid minute format.");
-            }
+        if ( ! validateInteger(cron.monthday, 1, 31) )
+            return console.error("Invalid monthday format: " + cron.monthday);
 
-            if (cron.hour !== "*" &&
-                !this._validateInteger(cron.hour, 0, 23))
-            {
-                $.error("Invalid hour format.");
-            }
+        if ( ! validateInteger(cron.month, 0, 11) )
+            return console.error("Invalid month format: " + cron.month);
 
-            if (cron.monthday !== "*" &&
-                !this._validateInteger(cron.monthday, 1, 31))
-            {
-                $.error("Invalid monthday format.");
-            }
+        if ( ! validateInteger(cron.weekday, 0, 7) )
+            return console.error("Invalid weekday format: " + cron.weekday);
 
-            if (cron.month !== "*" &&
-                !this._validateInteger(cron.month, 0, 11))
-            {
-                $.error("Invalid month format.");
-            }
+        // While valid, it's just simpler this way.
+        if ( cron.weekday === "7" )
+            cron.weekday = "0";
 
-            if (cron.weekday !== "*" &&
-                !this._validateInteger(cron.weekday, 0, 7))
-            {
-                $.error("Invalid weekday format.");
-            }
+        return cron;
+    }
 
-            // While valid, it's just simpler this way.
-            if (cron.weekday === "7")
-            {
-                cron.weekday = "0";
-            }
+    function buildSelect ( className, from, to, textFunction ) {
+        let result = `<select class='${className}'>`;
+        for ( let i = from; i < to; i++ )
+            result += `<option value=${i}>` + textFunction(i);
+        return result + "</select>";
+    }
 
-            // TODO Weird and unsupported formats
-
-            return cron;
-        };
-
-        this._validateInteger = function(integer, minimum, maximum)
-        {
-            var parsedInteger = parseInt(integer);
-            var valid =
-                !isNaN(parsedInteger) &&
-                Number.isInteger(parsedInteger) &&
-                parsedInteger >= minimum &&
-                parsedInteger <= maximum;
-            return valid;
-        };
-    };
-
-    Cron.prototype.initialize = function($element, options)
-    {
-        this._initialize($element, options);
-    };
-
-    Cron.prototype.disabled = function(disabled)
-    {
-        this._disabled(disabled);
-    };
-
-    Cron.prototype.value = function(value)
-    {
-        if (typeof(value) !== "undefined")
-        {
-            this._setValue(value);
-        }
-        else
-        {
-            return this._getValue();
-        }
-    };
-
-    $.fn.cron = function(parameter)
-    {
-        var $this = $(this);
-        if (typeof($this.data("cron")) !== "undefined")
-        {
-            if (typeof(Cron[parameter]) !== "undefined" &&
-                Cron[parameter] !== Cron.initialize)
-            {
-                return Cron[parameter].apply(this, Array.prototype.slice.call(arguments, 1));
-            }
-            else
-            {
-                $.error("Unsupported cron function.");
-            }
-        }
-        else
-        {
-            if (typeof(parameter) === "undefined" || typeof(parameter) === "object")
-            {
-                var cron = new Cron();
-                $this.data("cron", cron);
-                cron.initialize($this, parameter);
-            }
-        }
-    };
-
-    // (function(ko)
-    // {
-    //     ko.bindingHandlers.cron = {
-    //         init: function(element, valueAccessor)
-    //         {
-    //             var $element = $(element);
-    //             $element.cron(ko.unwrap(valueAccessor()));
-    //             $element.on("change", function()
-    //             {
-    //                 valueAccessor()
-    //             });
-    //         },
-    //         update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-    //             // This will be called once when the binding is first applied to an element,
-    //             // and again whenever any observables/computeds that are accessed change
-    //             // Update the DOM element based on the supplied values here.
-    //         }
-    //     };
-    // })(ko);
-})($);
+    out.jsCron = jsCron;
+})( window );

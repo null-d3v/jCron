@@ -1,11 +1,10 @@
 {
     "name": "jsCron",
-    "description": "jsCron is a jQuery plugin to create a basic interface for editing simple cron entries.",
+    "description": "jsCron is a javascript library to create a basic interface for editing simple cron entries.",
     "main": [
         "js/jCron.js"
     ],
     "dependencies": {
-        "jquery": "latest"
     },
     "devDependencies": {
     },
@@ -13,12 +12,12 @@
         "globals"
     ],
     "keywords": [
-        "jquery",
         "cron"
     ],
     "authors": [
         "Shawn Chin",
-        "null-d3v"
+        "null-d3v",
+        "Sheepy"
     ],
     "license": "MIT",
     "ignore": [
