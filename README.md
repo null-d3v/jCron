@@ -1,6 +1,6 @@
-# jCron
+# jsCron
 
-jCron is a [jQuery] plugin for presenting a basic interface for users to specify simple cron entries.
+jsCron is a [jQuery] plugin for presenting a basic interface for users to specify simple cron entries.
 
 Simple cron entries are limited to the following:
 ```
@@ -84,9 +84,8 @@ $("#input")
 
 ## Investigate and Implement TODO
 
-* Knockout binding handler.
 * Advanced mode for manual entry.
-* Testing framework.
+* Unit test.
 
 ## Others
 
